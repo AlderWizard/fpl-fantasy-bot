@@ -54,8 +54,11 @@ rsync -avz --progress \
     $LOCAL_PATH/ $PI_USER@$PI_HOST:$PI_PATH/
 
 # Install dependencies on Pi
-echo -e "${YELLOW}📦 Installing dependencies on Pi...${NC}"
-ssh $PI_USER@$PI_HOST "cd $PI_PATH && pip3 install -r requirements.txt"
+echo -e "${YELLOW}📦 Setting up Python virtual environment on Pi..."
+ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && python3 -m venv venv"
+
+echo "📦 Installing dependencies in virtual environment..."
+ssh "$PI_USER@$PI_HOST" "cd $PI_PATH && source venv/bin/activate && pip install -r requirements.txt"
 
 # Set up environment file
 echo -e "${YELLOW}⚙️ Setting up environment...${NC}"
@@ -72,7 +75,7 @@ After=network.target
 Type=simple
 User=$PI_USER
 WorkingDirectory=$PI_PATH
-ExecStart=/usr/bin/python3 run_fpl_bot.py
+ExecStart=$PI_PATH/venv/bin/python $PI_PATH/run_fpl_bot.py
 Restart=always
 RestartSec=10
 Environment=PYTHONPATH=$PI_PATH
